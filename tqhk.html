@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提前还款 - 个人贷款</title>
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* 页面容器 */
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        /* 头部样式 */
+        .header {
+            background: linear-gradient(135deg, #409eff, #66b1ff);
+            color: white;
+            padding: 20px 30px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        /* 内容区域 */
+        .content {
+            padding: 30px;
+        }
+
+        /* 贷款信息卡片 */
+        .loan-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #409eff;
+        }
+
+        .loan-info h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-item label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .info-item span {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* 还款表单 */
+        .repayment-form {
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e6e6e6;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #409eff;
+            box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+        }
+
+        /* 还款方式选择 */
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .radio-item input {
+            margin-right: 8px;
+            accent-color: #409eff;
+        }
+
+        /* 计算结果 */
+        .result-card {
+            background: #e8f4ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: none;
+        }
+
+        .result-card h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #1989fa;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-item label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .result-item span {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .highlight {
+            color: #e6a23c;
+            font-size: 16px;
+        }
+
+        /* 还款明细表格样式 */
+        .repayment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .repayment-table th,
+        .repayment-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .repayment-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+        }
+
+        .repayment-table td:first-child,
+        .repayment-table th:first-child {
+            text-align: center;
+        }
+
+        .repayment-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .table-container {
+            margin-top: 25px;
+            overflow-x: auto;
+        }
+
+        .table-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #409eff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background: #3399ff;
+        }
+
+        .btn-secondary {
+            background: #666;
+            margin-right: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* 提示信息 */
+        .tip {
+            font-size: 13px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .error {
+            color: #f56c6c;
+            display: none;
+            margin-top: 5px;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .repayment-table th,
+            .repayment-table td {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页面头部 -->
+        <div class="header">
+            <h1>提前还款计算与申请</h1>
+            <p>请填写相关信息，系统将为您计算提前还款金额及节省利息</p>
+        </div>
+
+        <!-- 主要内容 -->
+        <div class="content">
+            <!-- 贷款基本信息 -->
+            <div class="loan-info">
+                <h2>当前贷款信息</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>贷款本金</label>
+                        <span id="principal">¥300,000.00</span>
+                    </div>
+                    <div class="info-item">
+                        <label>剩余本金</label>
+                        <span id="remainingPrincipal">¥258,650.80</span>
+                    </div>
+                    <div class="info-item">
+                        <label>年利率</label>
+                        <span id="rate">4.90%</span>
+                    </div>
+                    <div class="info-item">
+                        <label>剩余期限</label>
+                        <span id="remainingTerm">116 个月</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 还款表单 -->
+            <div class="repayment-form">
+                <div class="form-group">
+                    <label for="repaymentAmount">提前还款金额 (元)</label>
+                    <input type="number" id="repaymentAmount" class="form-control" placeholder="请输入提前还款金额，最低 1000 元" min="1000">
+                    <div class="error" id="amountError">请输入有效的还款金额（最低 1000 元）</div>
+                    <div class="tip">提示：提前还款金额需为 1000 元的整数倍，且不超过剩余本金</div>
+                </div>
+
+                <div class="form-group">
+                    <label>还款方式</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" name="repaymentType" id="type1" value="reducePrincipal" checked>
+                            <label for="type1">减少月供，还款期限不变</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="repaymentType" id="type2" value="reduceTerm">
+                            <label for="type2">月供不变，缩短还款期限</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn" id="calculateBtn">计算还款结果</button>
+            </div>
+
+            <!-- 计算结果 -->
+            <div class="result-card" id="resultCard">
+                <h3>提前还款计算结果</h3>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <label>原月供金额</label>
+                        <span id="originalMonthly">¥2,850.50</span>
+                    </div>
+                    <div class="result-item">
+                        <label>新月供金额</label>
+                        <span id="newMonthly" class="highlight">¥0.00</span>
+                    </div>
+                    <div class="result-item">
+                        <label>总还款利息</label>
+                        <span id="totalInterest">¥0.00</span>
+                    </div>
+                    <div class="result-item">
+                        <label>节省利息</label>
+                        <span id="saveInterest" class="highlight">¥0.00</span>
+                    </div>
+                    <div class="result-item">
+                        <label>剩余还款期限</label>
+                        <span id="newTerm">0 个月</span>
+                    </div>
+                </div>
+
+                <!-- 新增：还款明细表格 -->
+                <div class="table-container">
+                    <div class="table-title">还款明细（前12个月）</div>
+                    <table class="repayment-table">
+                        <thead>
+                            <tr>
+                                <th>期数</th>
+                                <th>月供金额(元)</th>
+                                <th>偿还本金(元)</th>
+                                <th>偿还利息(元)</th>
+                                <th>剩余本金(元)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="repaymentTableBody">
+                            <!-- 表格内容将通过JS动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" id="resetBtn">重新计算</button>
+                    <button class="btn" id="submitBtn">提交还款申请</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        const loanData = {
+            principal: 300000,          // 贷款本金
+            remainingPrincipal: 258650.80, // 剩余本金
+            rate: 0.049,                // 年利率
+            remainingTerm: 116,         // 剩余期限（月）
+            originalMonthly: 2850.50    // 原月供
+        };
+
+        // DOM 元素
+        const repaymentAmount = document.getElementById('repaymentAmount');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultCard = document.getElementById('resultCard');
+        const amountError = document.getElementById('amountError');
+        const repaymentTableBody = document.getElementById('repaymentTableBody');
+        
+        // 结果显示元素
+        const newMonthly = document.getElementById('newMonthly');
+        const totalInterest = document.getElementById('totalInterest');
+        const saveInterest = document.getElementById('saveInterest');
+        const newTerm = document.getElementById('newTerm');
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 绑定事件
+            calculateBtn.addEventListener('click', calculateRepayment);
+            resetBtn.addEventListener('click', resetForm);
+            submitBtn.addEventListener('click', submitApplication);
+            
+            // 输入框验证
+            repaymentAmount.addEventListener('input', function() {
+                amountError.style.display = 'none';
+            });
+        });
+
+        // 计算提前还款
+        function calculateRepayment() {
+            // 获取输入金额
+            const amount = parseFloat(repaymentAmount.value) || 0;
+            
+            // 验证金额
+            if (isNaN(amount) || amount < 1000 || amount > loanData.remainingPrincipal) {
+                amountError.style.display = 'block';
+                return;
+            }
+            
+            // 获取还款方式
+            const repaymentType = document.querySelector('input[name="repaymentType"]:checked').value;
+            
+            // 计算新的剩余本金
+            const newPrincipal = loanData.remainingPrincipal - amount;
+            
+            let newMonthlyPayment = 0;
+            let newRemainingTerm = 0;
+            let totalInterestAmount = 0;
+            let saveInterestAmount = 0;
+            let paymentSchedule = []; // 还款明细数组
+            
+            // 月利率
+            const monthlyRate = loanData.rate / 12;
+            
+            if (repaymentType === 'reducePrincipal') {
+                // 方式1：减少月供，期限不变
+                newRemainingTerm = loanData.remainingTerm;
+                
+                // 计算新月供
+                newMonthlyPayment = (newPrincipal * monthlyRate * Math.pow(1 + monthlyRate, newRemainingTerm)) / 
+                                   (Math.pow(1 + monthlyRate, newRemainingTerm) - 1);
+                
+                // 计算总利息
+                totalInterestAmount = newMonthlyPayment * newRemainingTerm - newPrincipal;
+                
+                // 原总利息
+                const originalTotalInterest = loanData.originalMonthly * loanData.remainingTerm - loanData.remainingPrincipal;
+                
+                // 节省利息
+                saveInterestAmount = originalTotalInterest - totalInterestAmount;
+                
+                // 生成还款明细（前12个月）
+                paymentSchedule = generatePaymentSchedule(newPrincipal, monthlyRate, newMonthlyPayment, 12);
+            } else {
+                // 方式2：月供不变，缩短期限
+                newMonthlyPayment = loanData.originalMonthly;
+                
+                // 计算新期限（精确计算）
+                let remaining = newPrincipal;
+                let months = 0;
+                let tempSchedule = [];
+                
+                while (remaining > 0 && months < loanData.remainingTerm) {
+                    // 每月利息
+                    const interest = remaining * monthlyRate;
+                    // 每月还本金
+                    const principalPaid = Math.min(newMonthlyPayment - interest, remaining);
+                    // 月供（最后一期可能小于固定月供）
+                    const actualPayment = principalPaid + interest;
+                    // 剩余本金
+                    remaining -= principalPaid;
+                    
+                    // 记录还款明细
+                    tempSchedule.push({
+                        period: months + 1,
+                        payment: actualPayment,
+                        principal: principalPaid,
+                        interest: interest,
+                        remaining: Math.max(remaining, 0)
+                    });
+                    
+                    months++;
+                }
+                
+                newRemainingTerm = months;
+                // 取前12个月的明细
+                paymentSchedule = tempSchedule.slice(0, 12);
+                
+                // 计算总利息
+                totalInterestAmount = newMonthlyPayment * (newRemainingTerm - 1) + 
+                                     tempSchedule[tempSchedule.length - 1].payment - newPrincipal;
+                
+                // 原总利息
+                const originalTotalInterest = loanData.originalMonthly * loanData.remainingTerm - loanData.remainingPrincipal;
+                
+                // 节省利息
+                saveInterestAmount = originalTotalInterest - totalInterestAmount;
+            }
+            
+            // 更新显示
+            newMonthly.textContent = formatMoney(newMonthlyPayment);
+            totalInterest.textContent = formatMoney(totalInterestAmount);
+            saveInterest.textContent = formatMoney(saveInterestAmount);
+            newTerm.textContent = newRemainingTerm + ' 个月';
+            
+            // 生成还款明细表格
+            renderPaymentTable(paymentSchedule);
+            
+            // 显示结果卡片
+            resultCard.style.display = 'block';
+            
+            // 滚动到结果区域
+            resultCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 生成还款明细
+        function generatePaymentSchedule(principal, monthlyRate, monthlyPayment, months) {
+            let remaining = principal;
+            let schedule = [];
+            
+            for (let i = 0; i < months && remaining > 0; i++) {
+                // 每月利息
+                const interest = remaining * monthlyRate;
+                // 每月还本金
+                const principalPaid = monthlyPayment - interest;
+                // 剩余本金
+                remaining -= principalPaid;
+                
+                schedule.push({
+                    period: i + 1,
+                    payment: monthlyPayment,
+                    principal: principalPaid,
+                    interest: interest,
+                    remaining: Math.max(remaining, 0)
+                });
+            }
+            
+            return schedule;
+        }
+
+        // 渲染还款明细表格
+        function renderPaymentTable(schedule) {
+            // 清空表格
+            repaymentTableBody.innerHTML = '';
+            
+            // 生成表格行
+            schedule.forEach(item => {
+                const tr = document.createElement('tr');
+                
+                tr.innerHTML = `
+                    <td>${item.period}</td>
+                    <td>${formatMoney(item.payment)}</td>
+                    <td>${formatMoney(item.principal)}</td>
+                    <td>${formatMoney(item.interest)}</td>
+                    <td>${formatMoney(item.remaining)}</td>
+                `;
+                
+                repaymentTableBody.appendChild(tr);
+            });
+        }
+
+        // 重置表单
+        function resetForm() {
+            repaymentAmount.value = '';
+            document.getElementById('type1').checked = true;
+            resultCard.style.display = 'none';
+            amountError.style.display = 'none';
+            // 清空表格
+            repaymentTableBody.innerHTML = '';
+        }
+
+        // 提交申请
+        function submitApplication() {
+            const amount = parseFloat(repaymentAmount.value) || 0;
+            const repaymentType = document.querySelector('input[name="repaymentType"]:checked').value;
+            
+            const typeText = repaymentType === 'reducePrincipal' ? '减少月供，还款期限不变' : '月供不变，缩短还款期限';
+            
+            // 模拟提交
+            alert(`
+                提前还款申请提交成功！
+                还款金额：${formatMoney(amount)}
+                还款方式：${typeText}
+                请等待银行审核，审核通过后我们将短信通知您。
+            `);
+            
+            // 重置表单
+            resetForm();
+        }
+
+        // 格式化金额
+        function formatMoney(amount) {
+            return '¥' + amount.toLocaleString('zh-CN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+    </script>
+</body>
+</html>
